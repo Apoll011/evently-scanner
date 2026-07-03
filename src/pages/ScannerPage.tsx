@@ -65,8 +65,8 @@ export function ScannerPage() {
       if ('vibrate' in navigator) navigator.vibrate([100, 50, 100]);
     }
 
-    // Auto-return after 4 seconds for ticket view, 2 seconds for others
-    const timeout = mode === 'validate' ? 4000 : 2000;
+    // Auto-return after 5 seconds for ticket view, 2 seconds for others
+    const timeout = mode === 'validate' ? 5000 : 2000;
     setTimeout(() => {
       setResult(null);
       setIsScanning(true);

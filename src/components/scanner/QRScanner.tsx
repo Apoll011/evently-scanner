@@ -283,7 +283,6 @@ export function QRScanner({ onScan, onError, active = true }: QRScannerProps) {
             </div>
         )}
 
-        {/* Camera UI Controls — only meaningful once we're actually streaming */}
         {permissionState === 'granted' && (
             <div className="absolute top-20 right-4 z-20 flex flex-col gap-4">
               {cameras.length > 1 && (
