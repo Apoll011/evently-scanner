@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useScanner } from '../contexts/ScannerContext';
-import { QRScanner } from '../scanner/QRScanner';
+import { QRScanner } from '../components/scanner/QRScanner';
 import { parsePairingQr } from '../utils/qr';
 import { api } from '../api/client';
 import type { ScannerSession, Event } from '../types';
@@ -14,7 +14,7 @@ export function PairScannerPage() {
   const [error, setError] = useState<string | null>(null);
   const [pairedSession, setPairedSession] = useState<ScannerSession | null>(null);
 
-  const handleScan = async (result: string) => {
+  const handleScan = useCallback(async (result: string) => {
     if (loading || pairedSession) return;
 
     const token = parsePairingQr(result);
@@ -55,7 +55,7 @@ export function PairScannerPage() {
       setError(err.response?.data?.message || 'Authentication failed');
       setLoading(false);
     }
-  };
+  }, [loading, pairedSession, navigate, setEvent, setSession]);
 
   if (loading) {
     return (

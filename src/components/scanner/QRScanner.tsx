@@ -78,8 +78,24 @@ export function QRScanner({ onScan, onError, active = true }: QRScannerProps) {
     fetchCameras();
   }, [onError]);
 
+  const activeRef = useRef(active);
+  const onScanRef = useRef(onScan);
+  const onErrorRef = useRef(onError);
+
   useEffect(() => {
-    if (!active || !videoRef.current || !selectedCameraId) {
+    activeRef.current = active;
+  }, [active]);
+
+  useEffect(() => {
+    onScanRef.current = onScan;
+  }, [onScan]);
+
+  useEffect(() => {
+    onErrorRef.current = onError;
+  }, [onError]);
+
+  useEffect(() => {
+    if (!videoRef.current || !selectedCameraId) {
       if (controlsRef.current) {
         controlsRef.current.stop();
         controlsRef.current = null;
@@ -96,6 +112,7 @@ export function QRScanner({ onScan, onError, active = true }: QRScannerProps) {
           selectedCameraId,
           videoRef.current,
           (result, error) => {
+            if (!activeRef.current) return;
             if (result) {
               const text = result.getText();
               const now = Date.now();
@@ -109,7 +126,7 @@ export function QRScanner({ onScan, onError, active = true }: QRScannerProps) {
               }
 
               lastReadRef.current = { text, time: now };
-              onScan(text);
+              onScanRef.current(text);
             }
             if (error && !(error.name === 'NotFoundException')) {
               // Ignore NotFoundException as it's normal when no QR is in view
@@ -120,7 +137,7 @@ export function QRScanner({ onScan, onError, active = true }: QRScannerProps) {
         controlsRef.current = controls;
       } catch (err) {
         console.error('Failed to start scanner:', err);
-        if (onError) onError(err as Error);
+        if (onErrorRef.current) onErrorRef.current(err as Error);
       }
     };
 
@@ -132,7 +149,7 @@ export function QRScanner({ onScan, onError, active = true }: QRScannerProps) {
         controlsRef.current = null;
       }
     };
-  }, [active, onScan, onError, selectedCameraId]);
+  }, [selectedCameraId]);
 
   const toggleFlash = async () => {
     if (!videoRef.current || !videoRef.current.srcObject) return;

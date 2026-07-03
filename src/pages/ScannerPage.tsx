@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useScanner } from '../contexts/ScannerContext';
-import { QRScanner } from '../scanner/QRScanner';
+import { QRScanner } from '../components/scanner/QRScanner';
 import { parseTicketQr } from '../utils/qr';
 import { api } from '../api/client';
 import type { Ticket, CheckInResponse } from '../types';
@@ -23,7 +23,7 @@ export function ScannerPage() {
   const [result, setResult] = useState<{ type: 'success' | 'error' | 'ticket'; data: any } | null>(null);
   const [isScanning, setIsScanning] = useState(true);
 
-  const handleScan = async (text: string) => {
+  const handleScan = useCallback(async (text: string) => {
     if (!isScanning) return;
 
     const payload = parseTicketQr(text);
@@ -56,7 +56,7 @@ export function ScannerPage() {
       setResult(null);
       setIsScanning(true);
     }, 2000);
-  };
+  }, [isScanning, mode, gate]);
 
   const showError = (message: string) => {
     setResult({ type: 'error', data: message });
@@ -140,6 +140,7 @@ export function ScannerPage() {
 
           {result.type === 'ticket' && (
              <div className="w-full">
+                 {result.data}
                 <DigitalTicket ticket={result.data} />
              </div>
           )}

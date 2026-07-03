@@ -1,5 +1,6 @@
+import { useCallback } from 'react';
 import { useScanner } from '../contexts/ScannerContext';
-import { QRScanner } from '../scanner/QRScanner';
+import { QRScanner } from '../components/scanner/QRScanner';
 import { parseServerQr } from '../utils/qr';
 import { useNavigate } from 'react-router-dom';
 
@@ -7,13 +8,13 @@ export function ServerSetupPage() {
   const { setServerUrl } = useScanner();
   const navigate = useNavigate();
 
-  const handleScan = (result: string) => {
+  const handleScan = useCallback((result: string) => {
     const url = parseServerQr(result);
     if (url) {
       setServerUrl(url);
       navigate('/');
     }
-  };
+  }, [setServerUrl, navigate]);
 
   return (
     <div className="flex flex-col h-screen bg-background overflow-hidden">
