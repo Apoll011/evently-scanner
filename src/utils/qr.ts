@@ -23,3 +23,11 @@ export function parseTicketQr(text: string): TicketPayload | null {
     signature: match[3],
   };
 }
+
+export function parseTickeCodetQr(text: string): string | null {
+  // t://{ticketCode}
+  const match = text.match(/^t:\/\/([^@]+)$/);
+
+  return match ? match[1] : null;
+}
+

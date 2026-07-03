@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useScanner } from '../contexts/ScannerContext';
 import { QRScanner } from '../components/scanner/QRScanner';
-import { parseTicketQr } from '../utils/qr';
+import {parseTickeCodetQr, parseTicketQr} from '../utils/qr';
 import { api } from '../api/client';
 import type { Ticket, CheckInResponse } from '../types';
 import { DigitalTicket } from '../components/DigitalTicket';
@@ -25,10 +25,14 @@ export function ScannerPage() {
 
   const handleScan = useCallback(async (text: string) => {
     if (!isScanning) return;
+    let codeMode = false;
 
     let payload;
     if (text.startsWith('ticket://')) {
       payload = parseTicketQr(text);
+    } else if (text.startsWith('t://')) {
+      payload = parseTickeCodetQr(text)
+      codeMode = true;
     } else {
       try {
         const json = JSON.parse(text);
@@ -41,7 +45,7 @@ export function ScannerPage() {
       }
     }
 
-    if (!payload || !payload.payload || !payload.signature) {
+    if (!payload) {
       showError('Invalid QR format');
       return;
     }
@@ -50,10 +54,20 @@ export function ScannerPage() {
 
     try {
       if (mode === 'validate') {
-        const res = await api.get<Ticket>(`/tickets?o=${payload.payload}&s=${payload.signature}`);
+        let res;
+        if (codeMode) {
+          res = await api.get<Ticket>(`/tickets/code?code=${payload}`);
+        } else {
+          res = await api.get<Ticket>(`/tickets?o=${payload.payload}&s=${payload.signature}`);
+        }
         setResult({ type: 'ticket', data: res.data });
       } else {
-        const res = await api.post<CheckInResponse>(`/tickets/check-in?o=${payload.payload}&s=${payload.signature}${gate ? `&gate=${encodeURIComponent(gate)}` : ''}`);
+        let res;
+        if (codeMode) {
+          res = await api.post<CheckInResponse>(`/tickets/code/check-in?code=${payload}${gate ? `&gate=${encodeURIComponent(gate)}` : ''}`);
+        } else {
+          res = await api.post<CheckInResponse>(`/tickets/check-in?o=${payload.payload}&s=${payload.signature}${gate ? `&gate=${encodeURIComponent(gate)}` : ''}`);
+        }
         setResult({ type: 'success', data: res.data });
       }
 
@@ -65,6 +79,7 @@ export function ScannerPage() {
       if ('vibrate' in navigator) navigator.vibrate([100, 50, 100]);
     }
 
+    codeMode = false;
     // Auto-return after 5 seconds for ticket view, 2 seconds for others
     const timeout = mode === 'validate' ? 5000 : 2000;
     setTimeout(() => {
