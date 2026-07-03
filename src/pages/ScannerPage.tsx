@@ -81,15 +81,6 @@ export function ScannerPage() {
     }, 2000);
   };
 
-  // Remove the testing auto-scan effect if it's not needed, but keep it for now as requested or if it's part of the dev flow.
-
-  setTimeout(async () => {
-      if(result) return;
-      const res = await api.get<Ticket>(`/tickets?o=AgH_JOYkRZnbQ6eRF7Zx2wE7hv8uoUOrfyNNuKuWf53OKYtS0Wj8IKbGcLyaDvL9xd2brG40C5z_s3qYnKVE5rt4CiwSKTsVHw7L3owzcOzH-9cE&s=ej_RPOyGmBX-CdxXAk5Oi0-bgC7dZuHkckb5jEF4cKnDZ_kDTgp2dhv4dKDUMX0diw07aLXSCsP_1ivHUijoCQ`);
-      setResult({ type: 'ticket', data: res.data });
-  }, 2000)
-
-
   return (
     <div className="flex flex-col h-screen bg-black text-white overflow-hidden">
       {/* Header */}
