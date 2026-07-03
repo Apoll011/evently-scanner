@@ -23,13 +23,27 @@ export interface TicketPayload {
   signature: string;
 }
 
+export interface TicketType {
+  id: string;
+  eventId: string;
+  name: string;
+  description: string;
+  price: number;
+  quantity: number;
+  sold: number;
+  customFields: Record<string, any>;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Ticket {
+  id: string;
   holderName: string;
-  ticketType: string;
-  status: 'valid' | 'used' | 'invalid';
-  event: string;
+  ticketType: TicketType;
+  status: 'ISSUED' | 'USED' | 'CANCELLED' | 'REFUNDED';
+  event: Event;
   ticketIndex: string;
-  usedDate?: string;
+  usedAt?: string;
   customFields?: Record<string, string>;
 }
 

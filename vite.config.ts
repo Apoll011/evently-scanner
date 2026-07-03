@@ -37,4 +37,7 @@ export default defineConfig({
       }
     })
   ],
+  server: {
+    allowedHosts: ["fence-washbowl-egotism.ngrok-free.dev"]
+  }
 });

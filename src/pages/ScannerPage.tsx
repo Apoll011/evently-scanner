@@ -26,8 +26,22 @@ export function ScannerPage() {
   const handleScan = useCallback(async (text: string) => {
     if (!isScanning) return;
 
-    const payload = parseTicketQr(text);
-    if (!payload) {
+    let payload;
+    if (text.startsWith('ticket://')) {
+      payload = parseTicketQr(text);
+    } else {
+      try {
+        const json = JSON.parse(text);
+        if (json.payload && json.signature) {
+          payload = json;
+        }
+      } catch (e) {
+        showError('Invalid QR format');
+        return;
+      }
+    }
+
+    if (!payload || !payload.payload || !payload.signature) {
       showError('Invalid QR format');
       return;
     }
@@ -51,11 +65,12 @@ export function ScannerPage() {
       if ('vibrate' in navigator) navigator.vibrate([100, 50, 100]);
     }
 
-    // Auto-return after 2 seconds
+    // Auto-return after 4 seconds for ticket view, 2 seconds for others
+    const timeout = mode === 'validate' ? 4000 : 2000;
     setTimeout(() => {
       setResult(null);
       setIsScanning(true);
-    }, 2000);
+    }, timeout);
   }, [isScanning, mode, gate]);
 
   const showError = (message: string) => {
@@ -65,6 +80,15 @@ export function ScannerPage() {
       setIsScanning(true);
     }, 2000);
   };
+
+  // Remove the testing auto-scan effect if it's not needed, but keep it for now as requested or if it's part of the dev flow.
+
+  setTimeout(async () => {
+      if(result) return;
+      const res = await api.get<Ticket>(`/tickets?o=AgH_JOYkRZnbQ6eRF7Zx2wE7hv8uoUOrfyNNuKuWf53OKYtS0Wj8IKbGcLyaDvL9xd2brG40C5z_s3qYnKVE5rt4CiwSKTsVHw7L3owzcOzH-9cE&s=ej_RPOyGmBX-CdxXAk5Oi0-bgC7dZuHkckb5jEF4cKnDZ_kDTgp2dhv4dKDUMX0diw07aLXSCsP_1ivHUijoCQ`);
+      setResult({ type: 'ticket', data: res.data });
+  }, 2000)
+
 
   return (
     <div className="flex flex-col h-screen bg-black text-white overflow-hidden">
@@ -129,19 +153,25 @@ export function ScannerPage() {
                    <Check size={64} strokeWidth={3} />
                 </div>
                 <h2 className="text-3xl font-black uppercase">Checked In</h2>
-                <div className="bg-white/10 p-4 rounded-2xl text-left space-y-1">
-                   <p className="text-sm font-bold opacity-70 uppercase tracking-tighter">Holder</p>
-                   <p className="text-xl font-bold">{result.data.holderName}</p>
-                   <p className="text-sm font-bold opacity-70 uppercase tracking-tighter pt-2">Type</p>
-                   <p className="font-bold">{result.data.ticketType}</p>
+                <div className="bg-white/10 p-6 rounded-[2rem] border border-white/10 text-left space-y-4 relative overflow-hidden">
+                   <div className="absolute top-0 right-0 p-4 opacity-10">
+                      <Check size={80} />
+                   </div>
+                   <div>
+                      <p className="text-[10px] font-black opacity-70 uppercase tracking-[0.2em]">Holder</p>
+                      <p className="text-2xl font-black">{result.data.holderName}</p>
+                   </div>
+                   <div>
+                      <p className="text-[10px] font-black opacity-70 uppercase tracking-[0.2em]">Ticket Type</p>
+                      <p className="text-lg font-bold text-green-400">{result.data.ticketType}</p>
+                   </div>
                 </div>
              </div>
           )}
 
           {result.type === 'ticket' && (
              <div className="w-full">
-                 {result.data}
-                <DigitalTicket ticket={result.data} />
+                <DigitalTicket ticket={result.data as Ticket} />
              </div>
           )}
         </div>
