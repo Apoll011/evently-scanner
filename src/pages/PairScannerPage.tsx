@@ -59,7 +59,7 @@ export function PairScannerPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen bg-background p-6">
+      <div className="flex flex-col items-center justify-center h-dvh bg-background p-6">
         <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
         <h2 className="text-xl font-bold">Pairing Scanner...</h2>
         <p className="text-muted-foreground text-center mt-2">Connecting to server and fetching event data.</p>
@@ -69,7 +69,7 @@ export function PairScannerPage() {
 
   if (pairedSession && event) {
     return (
-      <div className="flex flex-col h-screen bg-background overflow-y-auto">
+      <div className="flex flex-col h-dvh bg-background overflow-y-auto">
         <div className="relative w-full aspect-video bg-muted flex items-center justify-center">
            {event.bannerUrl ? (
              <img src={event.bannerUrl} alt={event.name} className="w-full h-full object-cover" />
@@ -136,7 +136,7 @@ export function PairScannerPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-background overflow-hidden">
+    <div className="flex flex-col h-dvh bg-background overflow-hidden">
       <div className="flex-1 relative">
         <QRScanner onScan={handleScan} />
         {error && (

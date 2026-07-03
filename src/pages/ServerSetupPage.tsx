@@ -4,6 +4,13 @@ import { QRScanner } from '../components/scanner/QRScanner';
 import { parseServerQr } from '../utils/qr';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { X } from 'lucide-react';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 export function ServerSetupPage() {
   const { setServerUrl } = useScanner();
@@ -34,34 +41,29 @@ export function ServerSetupPage() {
   }, [setServerUrl, navigate]);
 
   return (
-    <div className="flex flex-col h-screen bg-background overflow-hidden">
+    <div className="flex flex-col h-dvh bg-background overflow-hidden">
       <div className="flex-1 relative">
         <QRScanner onScan={handleScan} />
         {(isValidating || error) && (
-          <div className="absolute inset-0 flex items-center justify-center bg-background/80 z-10">
-            <div className="bg-card p-6 rounded-lg shadow-xl border text-center max-w-xs mx-4">
-              {isValidating ? (
-                <>
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
-                  <p className="font-medium">Validating server...</p>
-                </>
-              ) : (
-                <>
-                  <div className="text-destructive mb-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-12 h-12 mx-auto">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-                    </svg>
-                  </div>
-                  <p className="font-medium text-destructive mb-4">{error}</p>
-                  <button
-                    onClick={() => setError(null)}
-                    className="bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium"
-                  >
-                    Try Again
-                  </button>
-                </>
-              )}
-            </div>
+          <div className={cn(
+            "absolute inset-0 flex items-center justify-center z-50 animate-in fade-in zoom-in duration-200",
+            isValidating ? "bg-background/80" : "bg-red-600/90 text-white"
+          )}>
+            {isValidating ? (
+              <div className="bg-card p-6 rounded-lg shadow-xl border text-center max-w-xs mx-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
+                <p className="font-medium">Validating server...</p>
+              </div>
+            ) : (
+              <div className="text-center space-y-4 cursor-pointer" onClick={() => setError(null)}>
+                 <div className="bg-white/20 p-6 rounded-full inline-block">
+                    <X size={64} strokeWidth={3} />
+                 </div>
+                 <h2 className="text-3xl font-black uppercase">Failed</h2>
+                 <p className="text-xl font-bold">{error}</p>
+                 <p className="text-sm opacity-70">Tap to try again</p>
+              </div>
+            )}
           </div>
         )}
       </div>

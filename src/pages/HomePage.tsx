@@ -15,7 +15,7 @@ export function HomePage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <div className="flex flex-col h-screen bg-background overflow-hidden">
+    <div className="flex flex-col h-dvh bg-background overflow-hidden">
       {/* Toolbar */}
       <header className="flex items-center justify-between px-4 py-3 border-b bg-card h-14 z-10">
         <button

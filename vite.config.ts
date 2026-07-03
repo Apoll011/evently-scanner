@@ -9,15 +9,20 @@ export default defineConfig({
     react(),
     basicSsl(),
     VitePWA({
+      devOptions: {
+        enabled: true,
+      },
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
       manifest: {
         name: 'Ticket Scanner PWA',
         short_name: 'TicketScan',
         description: 'Dedicated ticket scanner for event staff',
-        theme_color: '#000000',
-        background_color: '#000000',
-        display: 'standalone',
+        theme_color: '#220c0c',
+        background_color: '#ffffff',
+        display: 'fullscreen',
+        orientation: 'portrait',
+        categories: ['business', 'productivity'],
         icons: [
           {
             src: 'pwa-192x192.png',
@@ -41,7 +46,6 @@ export default defineConfig({
   ],
   server: {
     host: '0.0.0.0',
-    https: true,
-    allowedHosts: ["fence-washbowl-egotism.ngrok-free.dev"]
+    https: true
   }
 });

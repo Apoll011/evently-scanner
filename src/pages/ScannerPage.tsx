@@ -82,7 +82,7 @@ export function ScannerPage() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-black text-white overflow-hidden">
+    <div className="flex flex-col h-dvh bg-black text-white overflow-hidden">
       {/* Header */}
       <header className="absolute top-0 left-0 right-0 z-10 bg-black/40 backdrop-blur-md p-4 flex flex-col items-center gap-4">
         <div className="w-full flex items-center justify-between">
