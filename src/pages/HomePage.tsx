@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useScanner } from '../contexts/ScannerContext';
 import { useNavigate } from 'react-router-dom';
 import { Menu, X, LogOut, Trash2, Power, Calendar, Clock, MapPin, Users } from 'lucide-react';
@@ -10,9 +10,14 @@ function cn(...inputs: ClassValue[]) {
 }
 
 export function HomePage() {
-  const { logout, forgetServer, isAuthenticated, event, gate } = useScanner();
+  const { logout, forgetServer, isAuthenticated, event, gate, setGate } = useScanner();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [gateInput, setGateInput] = useState(gate || '');
+
+  useEffect(() => {
+    setGateInput(gate || '');
+  }, [gate]);
 
   return (
     <div className="flex flex-col h-dvh bg-background overflow-hidden">
@@ -47,7 +52,7 @@ export function HomePage() {
             </button>
           </div>
         ) : (
-          <div className="flex flex-col">
+          <div className="flex flex-col pb-12">
             {event?.bannerUrl && (
               <div className="w-full h-48 bg-muted overflow-hidden">
                 <img 
@@ -128,9 +133,26 @@ export function HomePage() {
 
       {/* Sticky Bottom Action Bar */}
       {isAuthenticated && (
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background via-background to-transparent pt-10">
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background via-background to-transparent pt-10 space-y-4">
+          <div className="relative group">
+            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors">
+              <MapPin size={20} />
+            </div>
+            <input
+              type="text"
+              placeholder="Enter gate name (optional)"
+              value={gateInput}
+              onChange={(e) => setGateInput(e.target.value)}
+              className="w-full pl-12 pr-4 py-4 bg-card border-2 rounded-2xl focus:border-primary outline-none transition-all shadow-sm"
+            />
+          </div>
           <button
-            onClick={() => navigate('/scanner')}
+            onClick={() => {
+              if (gateInput !== gate) {
+                setGate(gateInput);
+              }
+              navigate('/scanner');
+            }}
             className="w-full py-4 bg-primary text-primary-foreground rounded-2xl text-xl font-black shadow-2xl shadow-primary/20 hover:opacity-90 transition-all active:scale-[0.98] uppercase tracking-widest"
           >
             Open Scanner

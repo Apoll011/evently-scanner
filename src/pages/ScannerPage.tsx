@@ -90,6 +90,11 @@ export function ScannerPage() {
               <ArrowLeft size={24} />
            </button>
            <h1 className="font-bold truncate px-4">{event?.name || 'Scanner'}</h1>
+           {gate && (
+             <div className="absolute top-16 right-4 bg-primary text-primary-foreground px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider shadow-sm">
+               Gate: {gate}
+             </div>
+           )}
            <div className="w-10" />
         </div>
 
