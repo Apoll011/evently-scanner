@@ -1,14 +1,16 @@
 import { useState, useCallback } from 'react';
 import { useScanner } from '../contexts/ScannerContext';
 import { QRScanner } from '../components/scanner/QRScanner';
-import {parseTickeCodetQr, parseTicketQr} from '../utils/qr';
+import { parseTickeCodetQr, parseTicketQr } from '../utils/qr';
 import { api } from '../api/client';
 import type { Ticket, CheckInResponse } from '../types';
 import { DigitalTicket } from '../components/DigitalTicket';
-import { X, Check, ArrowLeft } from 'lucide-react';
+import { X, Check, ArrowLeft, WifiOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { verifySignature } from '../utils/crypto';
+import { offlineDb } from '../storage/offlineDb';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -17,15 +19,24 @@ function cn(...inputs: ClassValue[]) {
 type Mode = 'validate' | 'check-in';
 
 export function ScannerPage() {
-  const { event, gate } = useScanner();
+  const { event, gate, offlineMode, publicKey } = useScanner();
   const navigate = useNavigate();
-  const [mode, setMode] = useState<Mode>('validate');
+  const [mode, setMode] = useState<Mode>(offlineMode ? 'check-in' : 'validate');
   const [result, setResult] = useState<{ type: 'success' | 'error' | 'ticket'; data: any } | null>(null);
   const [isScanning, setIsScanning] = useState(true);
 
   const handleScan = useCallback(async (text: string) => {
     if (!isScanning) return;
     let codeMode = false;
+
+    if (offlineMode && !text.startsWith('ticket://')) {
+      if (text.startsWith('t://')) {
+        showError('Use offline QR code (ticket://)');
+      } else {
+        showError('Only ticket:// supported in offline mode');
+      }
+      return;
+    }
 
     let payload;
     if (text.startsWith('ticket://')) {
@@ -52,6 +63,49 @@ export function ScannerPage() {
 
     setIsScanning(false);
 
+    if (offlineMode) {
+      if (!publicKey) {
+        showError('Public key missing. Connect to server first.');
+        return;
+      }
+
+      const isValid = verifySignature(payload.payload, payload.signature, publicKey.public_key);
+      if (!isValid) {
+        showError('Invalid signature');
+      } else {
+        // Check for double check-in in local DB
+        const existing = offlineDb.getCheckIns();
+        const isAlreadyCheckedIn = existing.some(c => c.payload === payload.payload && c.signature === payload.signature);
+        
+        if (isAlreadyCheckedIn) {
+          showError('Already checked in (Offline)');
+        } else {
+          offlineDb.saveCheckIn({
+            payload: payload.payload,
+            signature: payload.signature,
+            timestamp: new Date().toISOString(),
+            gate: gate
+          });
+          
+          setResult({ 
+            type: 'success', 
+            data: { 
+              holderName: 'Offline Ticket', 
+              ticketType: 'Verified Offline',
+              checkedInAt: new Date().toISOString()
+            } as any 
+          });
+          if ('vibrate' in navigator) navigator.vibrate(200);
+        }
+      }
+      
+      setTimeout(() => {
+        setResult(null);
+        setIsScanning(true);
+      }, 2000);
+      return;
+    }
+
     try {
       if (mode === 'validate') {
         let res;
@@ -75,7 +129,11 @@ export function ScannerPage() {
       if ('vibrate' in navigator) navigator.vibrate(200);
       
     } catch (err: any) {
-      showError(err.response?.data?.message || 'Server error');
+      if (text.startsWith('t://')) {
+        showError('Server unreachable. Use offline QR code.');
+      } else {
+        showError(err.response?.data?.message || 'Server error');
+      }
       if ('vibrate' in navigator) navigator.vibrate([100, 50, 100]);
     }
 
@@ -105,6 +163,11 @@ export function ScannerPage() {
               <ArrowLeft size={24} />
            </button>
            <h1 className="font-bold truncate px-4">{event?.name || 'Scanner'}</h1>
+           {offlineMode && (
+             <div className="absolute top-16 left-4 bg-orange-500 text-white px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider shadow-sm flex items-center gap-1">
+               <WifiOff size={10} /> Offline Mode
+             </div>
+           )}
            {gate && (
              <div className="absolute top-16 right-4 bg-primary text-primary-foreground px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider shadow-sm">
                Gate: {gate}
@@ -115,10 +178,12 @@ export function ScannerPage() {
 
         <div className="flex bg-white/10 p-1 rounded-xl w-full max-w-xs">
            <button
-             onClick={() => setMode('validate')}
+             onClick={() => !offlineMode && setMode('validate')}
+             disabled={offlineMode}
              className={cn(
                "flex-1 py-2 px-4 rounded-lg font-bold transition-all",
-               mode === 'validate' ? "bg-white text-black shadow-lg" : "text-white/60"
+               mode === 'validate' ? "bg-white text-black shadow-lg" : "text-white/60",
+               offlineMode && "opacity-50 cursor-not-allowed"
              )}
            >
              Validate

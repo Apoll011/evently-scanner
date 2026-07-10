@@ -13,7 +13,7 @@ function cn(...inputs: ClassValue[]) {
 }
 
 export function ServerSetupPage() {
-  const { setServerUrl } = useScanner();
+  const { setServerUrl, setPublicKey } = useScanner();
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
   const [isValidating, setIsValidating] = useState(false);
@@ -26,6 +26,9 @@ export function ServerSetupPage() {
       try {
         const response = await axios.get(`${url}/`, { timeout: 5000 });
         if (response.data?.name === 'evently') {
+          alert('valid');
+          const keyResponse = await axios.get(`${url}/signing-key`, { timeout: 5000 });
+          setPublicKey(keyResponse.data);
           setServerUrl(url);
           navigate('/');
         } else {

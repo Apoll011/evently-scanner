@@ -4,9 +4,11 @@ import { storage } from '../storage';
 
 interface ScannerContextType extends ScannerState {
   setServerUrl: (url: string) => void;
+  setPublicKey: (key: any) => void;
   setSession: (session: ScannerSession) => void;
   setEvent: (event: Event) => void;
   setGate: (gate: string) => void;
+  setOfflineMode: (offline: boolean) => void;
   logout: () => void;
   forgetServer: () => void;
   isConfigured: boolean;
@@ -23,6 +25,11 @@ export function ScannerProvider({ children }: { children: ReactNode }) {
     setState(prev => ({ ...prev, serverUrl: url }));
   };
 
+  const setPublicKey = (key: any) => {
+    storage.setPublicKey(key);
+    setState(prev => ({ ...prev, publicKey: key }));
+  };
+
   const setSession = (session: ScannerSession) => {
     storage.setSession(session);
     setState(prev => ({ ...prev, session }));
@@ -36,6 +43,11 @@ export function ScannerProvider({ children }: { children: ReactNode }) {
   const setGate = (gate: string) => {
     storage.setGate(gate);
     setState(prev => ({ ...prev, gate }));
+  };
+
+  const setOfflineMode = (offline: boolean) => {
+    storage.setOfflineMode(offline);
+    setState(prev => ({ ...prev, offlineMode: offline }));
   };
 
   const logout = () => {
@@ -56,9 +68,11 @@ export function ScannerProvider({ children }: { children: ReactNode }) {
       value={{
         ...state,
         setServerUrl,
+        setPublicKey,
         setSession,
         setEvent,
         setGate,
+        setOfflineMode,
         logout,
         forgetServer,
         isConfigured,

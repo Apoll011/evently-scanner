@@ -5,6 +5,8 @@ const STORAGE_KEYS = {
   SESSION: 'ticket_scanner_session',
   EVENT: 'ticket_scanner_event',
   GATE: 'ticket_scanner_gate',
+  PUBLIC_KEY: 'ticket_scanner_public_key',
+  OFFLINE_MODE: 'ticket_scanner_offline_mode',
 };
 
 export const storage = {
@@ -26,6 +28,15 @@ export const storage = {
   getGate: (): string | null => localStorage.getItem(STORAGE_KEYS.GATE),
   setGate: (gate: string) => localStorage.setItem(STORAGE_KEYS.GATE, gate),
 
+  getPublicKey: () => {
+    const key = localStorage.getItem(STORAGE_KEYS.PUBLIC_KEY);
+    return key ? JSON.parse(key) : null;
+  },
+  setPublicKey: (key: any) => localStorage.setItem(STORAGE_KEYS.PUBLIC_KEY, JSON.stringify(key)),
+
+  getOfflineMode: (): boolean => localStorage.getItem(STORAGE_KEYS.OFFLINE_MODE) === 'true',
+  setOfflineMode: (offline: boolean) => localStorage.setItem(STORAGE_KEYS.OFFLINE_MODE, String(offline)),
+
   logout: () => {
     localStorage.removeItem(STORAGE_KEYS.SESSION);
     localStorage.removeItem(STORAGE_KEYS.EVENT);
@@ -38,8 +49,10 @@ export const storage = {
 
   getState: (): ScannerState => ({
     serverUrl: storage.getServerUrl(),
+    publicKey: storage.getPublicKey(),
     session: storage.getSession(),
     event: storage.getEvent(),
     gate: storage.getGate(),
+    offlineMode: storage.getOfflineMode(),
   }),
 };

@@ -10,7 +10,7 @@ function cn(...inputs: ClassValue[]) {
 }
 
 export function HomePage() {
-  const { logout, forgetServer, isAuthenticated, event, gate, setGate } = useScanner();
+  const { logout, forgetServer, isAuthenticated, event, gate, setGate, offlineMode, setOfflineMode } = useScanner();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [gateInput, setGateInput] = useState(gate || '');
@@ -23,14 +23,34 @@ export function HomePage() {
     <div className="flex flex-col h-dvh bg-background overflow-hidden">
       {/* Toolbar */}
       <header className="flex items-center justify-between px-4 py-3 border-b bg-card h-14 z-10">
-        <button
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="p-2 hover:bg-accent rounded-full transition-colors"
-        >
-          {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="p-2 hover:bg-accent rounded-full transition-colors"
+          >
+            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
         <span className="font-semibold text-lg">Ticket Scanner</span>
-        <div className="w-10"></div> {/* Spacer */}
+        <div className="flex items-center gap-2">
+          <div 
+            onClick={() => setOfflineMode(!offlineMode)}
+            className={cn(
+              "flex items-center gap-2 px-3 py-1 rounded-full border transition-all cursor-pointer",
+              offlineMode ? "bg-orange-500/10 border-orange-500/50 text-orange-600" : "bg-green-500/10 border-green-500/50 text-green-600"
+            )}
+          >
+            <div className={cn("w-2 h-2 rounded-full animate-pulse", offlineMode ? "bg-orange-500" : "bg-green-500")} />
+            <span className="text-xs font-bold uppercase tracking-wider">{offlineMode ? 'Offline' : 'Online'}</span>
+          </div>
+          <button
+            onClick={logout}
+            className="p-2 hover:bg-destructive/10 text-destructive rounded-full transition-colors"
+            title="Logout"
+          >
+            <LogOut size={20} />
+          </button>
+        </div>
       </header>
 
       {/* Main Content */}

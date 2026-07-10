@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ScannerProvider, useScanner } from './contexts/ScannerContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -5,12 +6,20 @@ import { ServerSetupPage } from './pages/ServerSetupPage';
 import { HomePage } from './pages/HomePage';
 import { PairScannerPage } from './pages/PairScannerPage';
 import { ScannerPage } from './pages/ScannerPage';
+import { startSyncInterval, stopSyncInterval } from './utils/sync';
 import './index.css';
 
 const queryClient = new QueryClient();
 
 function AppRoutes() {
   const { isConfigured } = useScanner();
+
+  useEffect(() => {
+    if (isConfigured) {
+      startSyncInterval();
+      return () => stopSyncInterval();
+    }
+  }, [isConfigured]);
 
   return (
     <Routes>

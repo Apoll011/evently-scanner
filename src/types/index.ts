@@ -57,7 +57,13 @@ export interface CheckInResponse {
 
 export interface ScannerState {
   serverUrl: string | null;
+  publicKey: {
+    algorithm: string;
+    keyId: string;
+    public_key: string;
+  } | null;
   session: ScannerSession | null;
   event: Event | null;
   gate: string | null;
+  offlineMode: boolean;
 }
